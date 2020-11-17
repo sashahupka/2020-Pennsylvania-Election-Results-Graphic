@@ -95,7 +95,7 @@ var colorScale = d3.scaleQuantile()
           .attr("stroke", "#4d4d4d")
           .attr("fill", function(d){ if(typeof f_data.get(d.properties.COUNTY_NAM) != "undefined") {return colorScale(f_data.get(d.properties.COUNTY_NAM).bidenPercent-f_data.get(d.properties.COUNTY_NAM).trumpPercent)}else{return "#ffffff"}})
           .on("mouseover", function(d){
-            tooltip.html("<strong>County: </strong>" + d.properties.COUNTY_NAM + "<br><strong>Biden Percentage:</strong> " + BigDecimal(f_data.get(d.properties.COUNTY_NAM).bidenPercent) + "<br><strong>Trump Percentage:</strong> " + Math.round(f_data.get(d.properties.COUNTY_NAM).trumpPercent) + "<br><strong>Jorgenson Percentage:</strong> " + Math.round(f_data.get(d.properties.COUNTY_NAM).jorgensonPercent))
+            tooltip.html("<strong>County: </strong>" + d.properties.COUNTY_NAM + "<br><strong>Biden Percentage:</strong> " + Math.round(f_data.get(d.properties.COUNTY_NAM).bidenPercent) + "<br><strong>Trump Percentage:</strong> " + Math.round(f_data.get(d.properties.COUNTY_NAM).trumpPercent) + "<br><strong>Jorgenson Percentage:</strong> " + Math.round(f_data.get(d.properties.COUNTY_NAM).jorgensonPercent))
               .style('top', d3.event.pageY - 15 + 'px')
               .style('left', d3.event.pageX - 30 + 'px')
               .style("opacity", 1)
