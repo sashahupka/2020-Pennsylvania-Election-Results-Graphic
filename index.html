@@ -1,0 +1,113 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <!-- Required meta tags -->
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+      
+    <title>2020 Pennsylvania Election Results</title>
+    <style>
+      .tooltip{
+        position:absolute;
+        border:1px solid black;
+        background-color: #ffffff;
+        padding: 8px;
+        font-family: "Verdana";
+        font-size: 10px;
+        top:0;
+        left:0;
+        opacity: 0;
+      }
+    </style>
+      
+    <style>
+      h1{
+        text-align: center;
+        color: black;
+        font-family: "Verdana"
+       }
+      p{
+        text-align: center;
+        color: black;
+        font-family: "Verdana";
+        margin-right: 150px;
+        margin-left: 150px
+       }
+      #myid{
+        text-align: center;
+        color: black;
+        font-family: "Verdana";
+        font-size: 12px;
+        margin-right: 150px;
+        margin-left: 150px
+        }
+    </style>
+    
+  </head>
+  <body>
+      
+    <h1>2020 Pennsylvania Election Results</h1>
+      
+    <p>Pennsylvania, long considered a pivotal battleground state in the 2020 presidential election, went narrowly to Democratic candidate Joe Biden after days of vote counting. Biden was bolstered to victory by the state's urban hubs, including Philadelphia County, where he won more than 80 percent of the vote. But Trump still received strong support in rural areas. About 84 percent of voters in Fulton County, the fourth-least populous county in the state with just under 15,000 residents, voted for Trump.</p>
+    
+    <p id="myid">Note: This cloropleth map uses unofficial election results gathered from the Pennsylvania Department of State. Results do not include write-in vote totals.</p>
+    
+    <div class="container vh-100"></div>
+    <div class="tooltip"></div>
+    <script src="js/d3.v5.min.js"></script>
+    <script src="js/topojson.min.js"></script>
+    <script>
+
+    var svg = d3.select(".container")
+        .append("svg")
+        .attr("width", "100%")
+        .attr("height", "100%")
+        .attr("viewBox", "0 0 975 610");
+      
+    var tooltip = d3.select(".tooltip");
+
+    Promise.all([
+      d3.json("PaCounty2020_01.json"),
+      d3.csv("pennsylvania_2020elections_counties.csv", function(d){ return {counties: d["County"], bidenVotes: +d["Biden"], trumpVotes: +d["Trump"], jorgensonVotes: +d["Jorgenson"], total: +d["Total"], bidenPercent: +d["Percent Biden"], trumpPercent: +d["Percent Trump"], jorgensonPercent: +d["Percent Jorgenson"] } })
+    ]).then(function(data){
+        
+        var f_data = d3.map(data[1], function(d){ return d.counties; });
+        
+        var trumpMax   = d3.max(data[1], function(d){ return d.trumpPercent - d.bidenPercent; });
+        var bidenMax = d3.max(data[1], function(d){ return d.bidenPercent - d.trumpPercent; });
+
+//var colorScale = d3.scaleSequential(d3.interpolateRdBu)
+var colorScale = d3.scaleQuantile()
+  .domain([-100, 100])
+  .range(["#67001f", "#b2182b", "#d6604d", "#f4a582", "#fddbc7", "#d1e5f0", "#92c5de", "#4393c3", "#2166ac", "#053061"]);
+
+       var projection = d3.geoMercator()
+          .scale(1)
+          .fitSize([975,610], topojson.feature(data[0], data[0].objects.PaCounty2020_01))
+
+       var path = d3.geoPath()
+          .projection(projection);
+
+       svg.selectAll("path")
+          .data(topojson.feature(data[0], data[0].objects.PaCounty2020_01).features)
+          .join("path")
+          .attr("d", path)
+          .attr("stroke", "#4d4d4d")
+          .attr("fill", function(d){ if(typeof f_data.get(d.properties.COUNTY_NAM) != "undefined") {return colorScale(f_data.get(d.properties.COUNTY_NAM).bidenPercent-f_data.get(d.properties.COUNTY_NAM).trumpPercent)}else{return "#ffffff"}})
+          .on("mouseover", function(d){
+            tooltip.html("<strong>County: </strong>" + d.properties.COUNTY_NAM + "<br><strong>Biden Percentage:</strong> " + BigDecimal(f_data.get(d.properties.COUNTY_NAM).bidenPercent) + "<br><strong>Trump Percentage:</strong> " + Math.round(f_data.get(d.properties.COUNTY_NAM).trumpPercent) + "<br><strong>Jorgenson Percentage:</strong> " + Math.round(f_data.get(d.properties.COUNTY_NAM).jorgensonPercent))
+              .style('top', d3.event.pageY - 15 + 'px')
+              .style('left', d3.event.pageX - 30 + 'px')
+              .style("opacity", 1)
+            .style("pointer-events", "none");
+          })
+          .on("mouseout", function(d){
+            tooltip.style("opacity", 0);
+          });
+
+
+    });
+
+    </script>
+  </body>
+</html>
